@@ -5,8 +5,6 @@ export interface CreateRoom {
     images: string[],
     type: string,
     capacity: number,
-    createdAt: Date,
-    updatedAt: Date,
     isAccessible?: boolean,
     isMaintenance?: boolean,
 }

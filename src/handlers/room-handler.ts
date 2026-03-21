@@ -121,3 +121,22 @@ export const UpdateRoom = async (req: Request, res: Response) => {
         throw error;
     }
 };
+
+export const DeleteRoom = async (req: Request, res: Response) => {
+    const validation = RoomIdValidator.validate(req.params)
+    if (validation.error) {
+        return res.status(400).send(generateValidationErrorMessage(validation.error.details))
+    }
+    const roomIdRequest = validation.value
+
+    const roomUsecase = new RoomUsecase(AppDataSource.getRepository(Room));
+
+    const roomDeleted = await roomUsecase.deleteRoom(roomIdRequest.id);
+    if (roomDeleted === null) {
+        return res.status(404).send({
+            error: "room not found"
+        })
+    }
+    return res.send(roomDeleted);
+
+}

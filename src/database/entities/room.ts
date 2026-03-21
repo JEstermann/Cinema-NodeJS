@@ -1,4 +1,4 @@
-import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
 
 @Entity()
 export class Room {
@@ -32,6 +32,9 @@ export class Room {
     @UpdateDateColumn()
     updatedAt: Date;
 
+    @DeleteDateColumn()
+    deletedAt: Date
+
     constructor(
         id: number,
         name: string,
@@ -41,6 +44,7 @@ export class Room {
         capacity: number,
         createdAt: Date,
         updatedAt: Date,
+        deletedAt: Date,
         isAccessible?: boolean,
         isMaintenance?: boolean,
     ) {
@@ -54,5 +58,6 @@ export class Room {
         this.isMaintenance = isMaintenance ?? false;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.deletedAt = deletedAt;
     }
 }

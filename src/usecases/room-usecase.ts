@@ -114,4 +114,14 @@ export class RoomUsecase {
             throw error;
         }
     }
+
+    async deleteRoom(id: number): Promise<Room | null> {
+        const room = await this.getRoom(id);
+        if (room === null) {
+            return null;
+        }
+        await this.roomRepository.softRemove(room);
+
+        return room
+    }
 }
