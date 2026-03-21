@@ -2,9 +2,10 @@ import { Request, Response } from "express";
 import { generateValidationErrorMessage } from "./validators/utils.js";
 import { AppDataSource } from "../database/database.js";
 import { QueryError } from "mysql2";
-import { CreateRoomValidator, ListRoomValidator, RoomIdValidator } from "./validators/room-validator.js";
+import { CreateRoomValidator, ListRoomValidator, RoomIdValidator, UpdateRoomValidator } from "./validators/room-validator.js";
 import { Room } from "../database/entities/room.js";
 import { RoomUsecase } from "../usecases/room-usecase.js";
+import { ResourceConflictError } from "../usecases/error.js"
 
 export const CreateRoom = async (req: Request, res: Response) => {
     const validator = CreateRoomValidator.validate(req.body);
@@ -79,3 +80,44 @@ export const GetRoom = async (req: Request, res: Response) => {
     }
     return res.send(room);
 }
+
+export const UpdateRoom = async (req: Request, res: Response) => {
+    const validation = UpdateRoomValidator.validate({ ...req.params, ...req.body });
+
+    if (validation.error) {
+        return res.status(400).send(generateValidationErrorMessage(validation.error.details));
+    }
+
+    const updateRoomRequest = validation.value;
+
+    const roomUsecase = new RoomUsecase(AppDataSource.getRepository(Room));
+    try {
+        const roomUpdated = await roomUsecase.updateRoom(
+            updateRoomRequest.id,
+            updateRoomRequest.name,
+            updateRoomRequest.description,
+            updateRoomRequest.images,
+            updateRoomRequest.type,
+            updateRoomRequest.capacity,
+            updateRoomRequest.isAccessible,
+            updateRoomRequest.isMaintenance,
+        );
+
+        if (roomUpdated === null) {
+            return res.status(404).send({
+                error: "room not found"
+            });
+        }
+
+        return res.send(roomUpdated);
+
+    } catch (error) {
+
+        if (error instanceof ResourceConflictError) {
+            return res.status(409).send({
+                name: "name is already taken"
+            });
+        }
+        throw error;
+    }
+};
