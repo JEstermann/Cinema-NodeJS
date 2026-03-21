@@ -1,0 +1,35 @@
+{
+  "name": "cinema-nodejs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:dev": "tsx --watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JEstermann/Cinema-NodeJS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/JEstermann/Cinema-NodeJS/issues"
+  },
+  "homepage": "https://github.com/JEstermann/Cinema-NodeJS#readme",
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "express": "^5.2.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "joi": "^18.0.2",
+    "mysql2": "^3.20.0",
+    "typeorm": "^0.3.28"
+  }
+}
