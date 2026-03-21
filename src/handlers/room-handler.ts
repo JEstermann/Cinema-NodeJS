@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { generateValidationErrorMessage } from "./validators/utils.js";
 import { AppDataSource } from "../database/database.js";
 import { QueryError } from "mysql2";
-import { CreateRoomValidator } from "./validators/room-validator.js";
+import { CreateRoomValidator, ListRoomValidator } from "./validators/room-validator.js";
 import { Room } from "../database/entities/room.js";
 import { RoomUsecase } from "../usecases/room-usecase.js";
 
@@ -38,4 +38,27 @@ export const CreateRoom = async (req: Request, res: Response) => {
 
         throw error;
     }
+};
+
+export const ListRooms = async (req: Request, res: Response) => {
+    const validation = ListRoomValidator.validate(req.query);
+    if (validation.error) {
+        return res.status(400).send(generateValidationErrorMessage(validation.error.details));
+    }
+
+    const listRoomRequest = validation.value;
+
+    const size = listRoomRequest.size ?? 10;
+    const page = listRoomRequest.page ?? 1;
+
+    const roomUsecase = new RoomUsecase(AppDataSource.getRepository(Room));
+
+    const rooms = await roomUsecase.listRooms({
+        page,
+        size,
+        name: listRoomRequest.name,
+        capacityMax: listRoomRequest.capacityMax
+    });
+
+    return res.send(rooms);
 };

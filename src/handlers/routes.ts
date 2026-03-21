@@ -1,6 +1,7 @@
 import { Application } from "express";
-import { CreateRoom } from "./room-handler.js";
+import { CreateRoom, ListRooms } from "./room-handler.js";
 
 export const initHandlers = (app: Application) => {
     app.post("/rooms", CreateRoom)
+    app.get("/rooms", ListRooms)
 }

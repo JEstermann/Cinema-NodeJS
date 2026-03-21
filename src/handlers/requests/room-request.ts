@@ -10,3 +10,11 @@ export interface CreateRoom {
     isAccessible?: boolean,
     isMaintenance?: boolean,
 }
+
+export interface ListRoomRequest {
+    page: number
+    size: number
+    name?: string
+    capacityMax?: number
+}
+

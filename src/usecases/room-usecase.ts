@@ -1,5 +1,21 @@
 import { Repository } from "typeorm";
 import { Room } from "../database/entities/room.js";
+import { ListRoomRequest } from "../handlers/requests/room-request.js";
+
+export interface ListResponse<T> {
+    data: T[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+}
+
+export interface ListProductFilter {
+    page: number,
+    size: number,
+    name?: string | undefined
+    capacityMax?: number | undefined
+}
 
 export class RoomUsecase {
     constructor(
@@ -27,5 +43,30 @@ export class RoomUsecase {
         });
 
         return await this.roomRepository.save(room);
+    }
+
+    async listRooms({ page, size, name, capacityMax }: ListProductFilter): Promise<ListResponse<Room>> {
+        const query = this.roomRepository.createQueryBuilder("room");
+
+        if (name !== undefined) {
+            query.andWhere("room.name = :name", { name });
+        }
+
+        if (capacityMax !== undefined) {
+            query.andWhere("room.capacity <= :capacityMax", { capacityMax });
+        }
+
+        query.skip((page - 1) * size);
+        query.take(size);
+
+        const [rooms, totalCount] = await query.getManyAndCount();
+
+        return {
+            data: rooms,
+            page,
+            pageSize: size,
+            totalCount,
+            totalPages: Math.ceil(totalCount / size)
+        };
     }
 }
