@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { generateValidationErrorMessage } from "./validators/utils.js";
 import { AppDataSource } from "../database/database.js";
 import { QueryError } from "mysql2";
-import { CreateRoomValidator, ListRoomValidator } from "./validators/room-validator.js";
+import { CreateRoomValidator, ListRoomValidator, RoomIdValidator } from "./validators/room-validator.js";
 import { Room } from "../database/entities/room.js";
 import { RoomUsecase } from "../usecases/room-usecase.js";
 
@@ -62,3 +62,20 @@ export const ListRooms = async (req: Request, res: Response) => {
 
     return res.send(rooms);
 };
+
+export const GetRoom = async (req: Request, res: Response) => {
+    const validation = RoomIdValidator.validate(req.params)
+    if (validation.error) {
+        return res.status(400).send(generateValidationErrorMessage(validation.error.details))
+    }
+    const roomIdRequest = validation.value
+    const roomUsecase = new RoomUsecase(AppDataSource.getRepository(Room));
+
+    const room = await roomUsecase.getRoom(roomIdRequest.id);
+    if (room === null) {
+        return res.status(404).send({
+            error: "room not found"
+        })
+    }
+    return res.send(room);
+}

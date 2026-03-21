@@ -12,9 +12,12 @@ export interface CreateRoom {
 }
 
 export interface ListRoomRequest {
-    page: number
-    size: number
+    page?: number
+    size?: number
     name?: string
     capacityMax?: number
 }
 
+export interface RoomIdRequest {
+    id: number
+}

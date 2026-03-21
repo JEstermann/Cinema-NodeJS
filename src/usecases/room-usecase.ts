@@ -69,4 +69,10 @@ export class RoomUsecase {
             totalPages: Math.ceil(totalCount / size)
         };
     }
+
+    async getRoom(id: number): Promise<Room | null> {
+        return await this.roomRepository.findOneBy({
+            id
+        });
+    }
 }
