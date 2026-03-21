@@ -2,12 +2,16 @@ import express from "express";
 import "reflect-metadata";
 import { initHandlers } from "./handlers/routes.js";
 import { AppDataSource } from "./database/database.js";
+import { swaggerDocs } from "./handlers/swagger/swagger.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 app.use(express.json())
 
 initHandlers(app);
+
+swaggerDocs(app, PORT)
+
 try {
     await AppDataSource.initialize();
 } catch(error) {
