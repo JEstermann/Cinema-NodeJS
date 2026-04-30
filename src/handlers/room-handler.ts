@@ -92,16 +92,9 @@ export const UpdateRoom = async (req: Request, res: Response) => {
 
     const roomUsecase = new RoomUsecase(AppDataSource.getRepository(Room));
     try {
-        const roomUpdated = await roomUsecase.updateRoom(
-            updateRoomRequest.id,
-            updateRoomRequest.name,
-            updateRoomRequest.description,
-            updateRoomRequest.images,
-            updateRoomRequest.type,
-            updateRoomRequest.capacity,
-            updateRoomRequest.isAccessible,
-            updateRoomRequest.isMaintenance,
-        );
+        const { id, ...data } = updateRoomRequest;
+        const roomUpdated = await roomUsecase.updateRoom(id, data);
+
 
         if (roomUpdated === null) {
             return res.status(404).send({
