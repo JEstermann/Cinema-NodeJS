@@ -94,11 +94,10 @@ export class RoomUsecase {
     }
 }
 
-    async deleteRoom(id: number): Promise<Room | null> {
+    async deleteRoom(id: number): Promise<void> {
         const room = await this.getRoom(id);
-        if (!room) return null;
+        if (!room) return;
         
-        
-        return await this.roomRepository.softRemove(room);
+        await this.roomRepository.delete(id);
     }
 }
