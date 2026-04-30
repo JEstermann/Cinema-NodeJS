@@ -77,43 +77,22 @@ export class RoomUsecase {
         });
     }
 
-    async updateRoom(
-        id: number,
-        name?: string,
-        description?: string,
-        images?: string[],
-        type?: string,
-        capacity?: number,
-        isAccessible?: boolean,
-        isMaintenance?: boolean,
-    ): Promise<Room | null> {
+   async updateRoom(id: number, data: Partial<Room>): Promise<Room | null> {
+    const room = await this.getRoom(id);
+    if (!room) return null;
 
-        const room = await this.getRoom(id);
-        if (room === null) {return null;}
+    // Object.assign copie toutes les propriétés définies de 'data' vers 'room'
+    Object.assign(room, data);
 
-        if (name !== undefined) {room.name = name;}
-
-        if (description !== undefined) {room.description = description;}
-
-        if (images !== undefined) {room.images = images;}
-
-        if (type !== undefined) {room.type = type;}
-
-        if (capacity !== undefined) {room.capacity = capacity;}
-
-        if (isAccessible !== undefined) {room.isAccessible = isAccessible;}
-
-        if (isMaintenance !== undefined) {room.isMaintenance = isMaintenance;}
-
-        try {
-            return await this.roomRepository.save(room);
-        } catch (error) {
-            if ((error as any).code === "ER_DUP_ENTRY") {
-                throw new ResourceConflictError("error name is already taken");
-            }
-            throw error;
+    try {
+        return await this.roomRepository.save(room);
+    } catch (error) {
+        if ((error as any).code === "ER_DUP_ENTRY" || (error as any).errno === 1062) {
+            throw new ResourceConflictError("This room name is already taken");
         }
+        throw error;
     }
+}
 
     async deleteRoom(id: number): Promise<Room | null> {
         const room = await this.getRoom(id);
