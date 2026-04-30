@@ -19,7 +19,4 @@ export class Movie {
 
     @UpdateDateColumn()
     updatedAt: Date;
-
-    @DeleteDateColumn()
-    deletedAt: Date;
 }
