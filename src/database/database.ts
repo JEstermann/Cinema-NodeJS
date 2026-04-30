@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { DataSource } from "typeorm";
 import { Room } from "./entities/room.js";
-
+import { Movie } from "./entities/movie.js";
 export const AppDataSource = new DataSource({
     type: "mysql",
     host: process.env.DB_HOST as string, 
@@ -10,7 +10,7 @@ export const AppDataSource = new DataSource({
     password: process.env.DB_PASSWORD as string,
     database: process.env.DB_DATABASE as string,
     
-    synchronize: process.env.NODE_ENV === "development", 
-    logging: process.env.NODE_ENV === "development",
-    entities: [Room]
+    synchronize: true, 
+    logging:true,
+    entities: [Room,Movie]
 });
