@@ -2,6 +2,9 @@ import "dotenv/config";
 import { DataSource } from "typeorm";
 import { Room } from "./entities/room.js";
 import { Movie } from "./entities/movie.js";
+import { User } from "./entities/user.js"
+import { Token } from "./entities/token.js"
+
 export const AppDataSource = new DataSource({
     type: "mysql",
     host: process.env.DB_HOST as string, 
