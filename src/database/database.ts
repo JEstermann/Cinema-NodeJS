@@ -12,5 +12,5 @@ export const AppDataSource = new DataSource({
     
     synchronize: true, 
     logging:true,
-    entities: [Room,Movie]
+    entities: [Room,Movie,User,Token]
 });
