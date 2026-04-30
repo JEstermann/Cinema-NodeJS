@@ -1,32 +1,37 @@
 services:
   mysql-db:
-    image: mysql:latest
+    image: mysql:8.0 
+    container_name: cinema-db
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: your_password
-      MYSQL_DATABASE: your_database
-      MYSQL_USER: your_username
-      MYSQL_PASSWORD: your_password
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 2s
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
 
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
+    image: phpmyadmin:latest
+    container_name: cinema-pma
     ports:
       - "8080:80"
     depends_on:
       - mysql-db
     environment:
       - PMA_HOST=mysql-db
+      - PMA_PORT=3306
 
   myapp:
     build: .
+    container_name: cinema-app
     ports:
       - "3000:3000"
     depends_on:
@@ -34,7 +39,10 @@ services:
         condition: service_healthy
     environment:
       - DB_HOST=mysql-db
+      - DB_PORT=3306
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
 
 volumes:
   mysql-data:
-    driver: local

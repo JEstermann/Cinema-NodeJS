@@ -5,7 +5,7 @@ import { AppDataSource } from "./database/database.js";
 import { swaggerDocs } from "./handlers/swagger/swagger.js";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.APP_PORT || 3000;
 app.use(express.json())
 
 initHandlers(app);
