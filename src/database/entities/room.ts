@@ -5,25 +5,25 @@ export class Room {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ unique: true, length: 255 })
+    @Column("varchar", { unique: true, length: 255 })
     name: string;
 
     @Column("text", { nullable: true })
     description: string;
 
-    @Column("json", { default: [] })
+    @Column("json")
     images: string[] = [];
 
-    @Column({ length: 100 })
+    @Column("varchar", { length: 100 })
     type: string;
 
     @Column("int")
     capacity: number;
 
-    @Column({ default: false })
+    @Column("boolean", { default: false })
     isAccessible: boolean = false;
 
-    @Column({ default: false })
+    @Column("boolean", { default: false })
     isMaintenance: boolean = false;
 
     @CreateDateColumn()
