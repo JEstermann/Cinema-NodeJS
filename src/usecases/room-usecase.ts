@@ -96,11 +96,9 @@ export class RoomUsecase {
 
     async deleteRoom(id: number): Promise<Room | null> {
         const room = await this.getRoom(id);
-        if (room === null) {
-            return null;
-        }
-        await this.roomRepository.softRemove(room);
-
-        return room
+        if (!room) return null;
+        
+        
+        return await this.roomRepository.softRemove(room);
     }
 }
