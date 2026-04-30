@@ -14,12 +14,13 @@ swaggerDocs(app, PORT)
 
 try {
     await AppDataSource.initialize();
+    console.log("Database initialized successfully");
+    app.listen(PORT, () => {
+        console.log("App is listening on port " + PORT)
+    })
 } catch(error) {
     console.log(error)
     console.log("failed to initialized database conection")
     process.exit(1)
 }
 
-app.listen(PORT, () => {
-    console.log("App is listening on port " + PORT)
-})
