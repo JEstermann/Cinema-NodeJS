@@ -1,7 +1,7 @@
 import { Application } from "express";
 import { CreateRoom, GetRoom, ListRooms, UpdateRoom, DeleteRoom } from "./room-handler.js";
 import { CreateMovie, ListMovies, GetMovie, UpdateMovie, DeleteMovie } from "./movie-handler.js";
-import { Signup, Login } from "./auth-handler.js";
+import { Signup, Login, Logout, RefreshToken } from "./auth-handler.js";
 import { AuthMiddleware, RoleMiddleware } from "./middlewares/auth-middleware.js";
 
 export const initHandlers = (app: Application) => {
@@ -226,4 +226,38 @@ export const initHandlers = (app: Application) => {
      *         description: Film supprimé
      */
     app.delete("/movies/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), DeleteMovie);
+
+    /**
+ * @openapi
+ * /auth/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Déconnecter l'utilisateur (supprime le token en base)
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ */
+app.post("/auth/logout", Logout);
+
+/**
+ * @openapi
+ * /auth/refresh:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Obtenir un nouvel Access Token (5 min) via le Refresh Token
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ */
+app.post("/auth/refresh", RefreshToken);
 }

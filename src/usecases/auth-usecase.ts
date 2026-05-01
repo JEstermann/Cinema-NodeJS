@@ -43,4 +43,36 @@ export class AuthUsecase {
 
         return { accessToken, refreshToken: refreshTokenStr };
     }
+
+    async logout(refreshToken: string): Promise<void> {
+    // On supprime physiquement le token de la base : c'est l'aspect "Stateful"
+    await this.tokenRepository.delete({ token: refreshToken });
+}
+
+async refresh(refreshToken: string): Promise<{ accessToken: string }> {
+    const tokenRecord = await this.tokenRepository.findOne({ 
+        where: { token: refreshToken },
+        relations: ["user"] 
+    });
+    if (!tokenRecord) throw new Error("Refresh token invalide ou session expirée");
+
+    const refreshSecret = process.env.JWT_REFRESH_SECRET as string;
+    try {
+        jwt.verify(refreshToken, refreshSecret);
+    } catch (err) {
+        await this.tokenRepository.delete({ token: refreshToken });
+        throw new Error("Session expirée");
+    }
+
+    // 3. On génère un nouvel Access Token de 5 minutes maximum
+    const accessSecret = process.env.JWT_SECRET as string;
+    const accessToken = jwt.sign(
+        { userId: tokenRecord.user.id, role: tokenRecord.user.role }, 
+        accessSecret, 
+        { expiresIn: '5m' }
+    );
+
+    return { accessToken };
+}
+
 }

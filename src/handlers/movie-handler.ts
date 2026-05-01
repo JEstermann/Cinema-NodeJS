@@ -11,7 +11,6 @@ import Joi from "joi";
 const MovieIdValidator = Joi.object({ id: Joi.number().min(1).required() });
 
 export const CreateMovie = async (req: Request, res: Response) => {
-    // 1. Validation des données reçues
     const validator = CreateMovieValidator.validate(req.body);
     if (validator.error) {
         return res.status(400).send(generateValidationErrorMessage(validator.error.details));
@@ -19,7 +18,6 @@ export const CreateMovie = async (req: Request, res: Response) => {
 
     const movieUsecase = new MovieUsecase(AppDataSource.getRepository(Movie));
     
-    // 2. Appel de la logique métier
     try {
         const movieCreated = await movieUsecase.createMovie(validator.value);
         return res.status(201).send(movieCreated); 
@@ -91,6 +89,5 @@ export const DeleteMovie = async (req: Request, res: Response) => {
     const movieUsecase = new MovieUsecase(AppDataSource.getRepository(Movie));
     await movieUsecase.deleteMovie(validation.value.id);
     
-    // Pour une suppression réussie, on renvoie souvent un simple statut 200
     return res.status(200).send({ message: "Film supprimé avec succès" });
 };

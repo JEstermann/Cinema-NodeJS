@@ -8,7 +8,6 @@ import { AuthValidator } from "./validators/user-validator.js";
 import { generateValidationErrorMessage } from "./validators/utils.js";
 
 export const Signup = async (req: Request, res: Response) => {
-    // Validation de l'email et du mot de passe
     const { error, value } = AuthValidator.validate(req.body);
     if (error) {
         return res.status(400).send(generateValidationErrorMessage(error.details));
@@ -17,7 +16,6 @@ export const Signup = async (req: Request, res: Response) => {
     const userUsecase = new UserUsecase(AppDataSource.getRepository(User));
 
     try {
-        // Création de l'utilisateur (le mot de passe sera haché dans le usecase)
         const user = await userUsecase.signup(value);
         return res.status(201).send(user);
     } catch (err: any) {
@@ -26,7 +24,6 @@ export const Signup = async (req: Request, res: Response) => {
 };
 
 export const Login = async (req: Request, res: Response) => {
-    // Validation des entrées
     const { error, value } = AuthValidator.validate(req.body);
     if (error) {
         return res.status(400).send(generateValidationErrorMessage(error.details));
@@ -44,5 +41,35 @@ export const Login = async (req: Request, res: Response) => {
     } catch (err: any) {
     
         return res.status(401).send({ error: "Identifiants invalides" });
+    }
+};
+
+export const Logout = async (req: Request, res: Response) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(400).send({ error: "Refresh token manquant" });
+
+    const authUsecase = new AuthUsecase(
+        AppDataSource.getRepository(User),
+        AppDataSource.getRepository(Token)
+    );
+
+    await authUsecase.logout(refreshToken);
+    return res.status(200).send({ message: "Déconnexion réussie" });
+};
+
+export const RefreshToken = async (req: Request, res: Response) => {
+    const { refreshToken } = req.body;
+    if (!refreshToken) return res.status(400).send({ error: "Refresh token manquant" });
+
+    const authUsecase = new AuthUsecase(
+        AppDataSource.getRepository(User),
+        AppDataSource.getRepository(Token)
+    );
+
+    try {
+        const result = await authUsecase.refresh(refreshToken);
+        return res.status(200).send(result);
+    } catch (err: any) {
+        return res.status(401).send({ error: err.message });
     }
 };
