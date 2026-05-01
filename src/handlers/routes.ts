@@ -1,8 +1,52 @@
 import { Application } from "express";
 import { CreateRoom, GetRoom, ListRooms, UpdateRoom, DeleteRoom } from "./room-handler.js";
 import { CreateMovie, ListMovies, GetMovie, UpdateMovie, DeleteMovie } from "./movie-handler.js";
+import { Signup, Login } from "./auth-handler.js";
+import { AuthMiddleware, RoleMiddleware } from "./middlewares/auth-middleware.js";
 
 export const initHandlers = (app: Application) => {
+    // ==========================================
+    // ROUTES D'AUTHENTIFICATION (PUBLIQUES)
+    // ==========================================
+
+    /**
+     * @openapi
+     * /auth/signup:
+     *   post:
+     *     tags:
+     *       - Auth
+     *     summary: Créer un nouveau compte utilisateur
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/AuthRequest'
+     *     responses:
+     *       201:
+     *         description: Utilisateur créé
+     */
+    app.post("/auth/signup", Signup);
+
+    /**
+     * @openapi
+     * /auth/login:
+     *   post:
+     *     tags:
+     *       - Auth
+     *     summary: Se connecter pour obtenir des tokens
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/AuthRequest'
+     *     responses:
+     *       200:
+     *         description: Connexion réussie, renvoie les tokens
+     */
+    app.post("/auth/login", Login);
+
     // ==========================================
     // ROUTES POUR LES SALLES (ROOMS)
     // ==========================================
@@ -11,9 +55,10 @@ export const initHandlers = (app: Application) => {
      * @openapi
      * /rooms:
      *   post:
-     *     tags:
-     *       - Salles
-     *     summary: Créer une nouvelle salle
+     *     tags: [Salles]
+     *     summary: Créer une nouvelle salle (ADMIN)
+     *     security:
+     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
@@ -22,92 +67,54 @@ export const initHandlers = (app: Application) => {
      *             $ref: '#/components/schemas/CreateRoomRequest'
      *     responses:
      *       201:
-     *         description: Salle créée avec succès
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/RoomResponse'
-     *       400:
-     *         description: Erreur de validation
-     *       409:
-     *         description: Ce nom de salle est déjà utilisé
+     *         description: Salle créée
+     *       403:
+     *         description: Accès refusé
      */
-    app.post("/rooms", CreateRoom)
+    app.post("/rooms", AuthMiddleware, RoleMiddleware(["ADMIN"]), CreateRoom);
 
     /**
      * @openapi
      * /rooms:
      *   get:
-     *     tags:
-     *       - Salles
-     *     summary: Lister les salles avec pagination et filtres
-     *     parameters:
-     *       - in: query
-     *         name: page
-     *         schema:
-     *           type: integer
-     *         description: Numéro de la page
-     *       - in: query
-     *         name: size
-     *         schema:
-     *           type: integer
-     *         description: Nombre d'éléments par page
-     *       - in: query
-     *         name: name
-     *         schema:
-     *           type: string
-     *         description: Filtrer par nom de salle
-     *       - in: query
-     *         name: capacityMax
-     *         schema:
-     *           type: integer
-     *         description: Capacité maximale recherchée
+     *     tags: [Salles]
+     *     summary: Lister les salles
+     *     security:
+     *       - bearerAuth: []
      *     responses:
      *       200:
-     *         description: Liste des salles récupérée avec succès
+     *         description: Liste des salles
      */
-    app.get("/rooms", ListRooms)
+    app.get("/rooms", AuthMiddleware, ListRooms);
 
     /**
      * @openapi
      * /rooms/{id}:
      *   get:
-     *     tags:
-     *       - Salles
+     *     tags: [Salles]
      *     summary: Récupérer une salle par son ID
+     *     security:
+     *       - bearerAuth: []
      *     parameters:
      *       - in: path
      *         name: id
      *         required: true
      *         schema:
      *           type: integer
-     *         description: ID unique de la salle
      *     responses:
      *       200:
      *         description: Salle trouvée
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/RoomResponse'
-     *       404:
-     *         description: Salle introuvable
      */
-    app.get("/rooms/:id", GetRoom)
+    app.get("/rooms/:id", AuthMiddleware, GetRoom);
 
     /**
      * @openapi
      * /rooms/{id}:
      *   patch:
-     *     tags:
-     *       - Salles
-     *     summary: Mettre à jour une salle
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID de la salle à modifier
+     *     tags: [Salles]
+     *     summary: Mettre à jour une salle (ADMIN)
+     *     security:
+     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
@@ -116,35 +123,23 @@ export const initHandlers = (app: Application) => {
      *             $ref: '#/components/schemas/UpdateRoomRequest'
      *     responses:
      *       200:
-     *         description: Salle mise à jour avec succès
-     *       404:
-     *         description: Salle introuvable
-     *       409:
-     *         description: Le nouveau nom est déjà utilisé par une autre salle
+     *         description: Salle mise à jour
      */
-    app.patch("/rooms/:id", UpdateRoom)
+    app.patch("/rooms/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), UpdateRoom);
 
     /**
      * @openapi
      * /rooms/{id}:
      *   delete:
-     *     tags:
-     *       - Salles
-     *     summary: Supprimer une salle
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID de la salle à supprimer
+     *     tags: [Salles]
+     *     summary: Supprimer une salle (ADMIN)
+     *     security:
+     *       - bearerAuth: []
      *     responses:
      *       200:
-     *         description: Salle supprimée avec succès
-     *       404:
-     *         description: Salle introuvable
+     *         description: Salle supprimée
      */
-    app.delete("/rooms/:id", DeleteRoom)
+    app.delete("/rooms/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), DeleteRoom);
 
     // ==========================================
     // ROUTES POUR LES FILMS (MOVIES)
@@ -154,9 +149,10 @@ export const initHandlers = (app: Application) => {
      * @openapi
      * /movies:
      *   post:
-     *     tags:
-     *       - Films
-     *     summary: Créer un nouveau film
+     *     tags: [Films]
+     *     summary: Créer un nouveau film (ADMIN)
+     *     security:
+     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
@@ -165,85 +161,46 @@ export const initHandlers = (app: Application) => {
      *             $ref: '#/components/schemas/CreateMovieRequest'
      *     responses:
      *       201:
-     *         description: Film créé avec succès
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/MovieResponse'
-     *       400:
-     *         description: Données invalides
+     *         description: Film créé
      */
-    app.post("/movies", CreateMovie);
+    app.post("/movies", AuthMiddleware, RoleMiddleware(["ADMIN"]), CreateMovie);
 
     /**
      * @openapi
      * /movies:
      *   get:
-     *     tags:
-     *       - Films
-     *     summary: Lister les films avec pagination et recherche
-     *     parameters:
-     *       - in: query
-     *         name: page
-     *         schema:
-     *           type: integer
-     *         description: Numéro de la page
-     *       - in: query
-     *         name: size
-     *         schema:
-     *           type: integer
-     *         description: Nombre de films par page
-     *       - in: query
-     *         name: title
-     *         schema:
-     *           type: string
-     *         description: Rechercher un film par son titre
+     *     tags: [Films]
+     *     summary: Lister les films
+     *     security:
+     *       - bearerAuth: []
      *     responses:
      *       200:
-     *         description: Liste des films récupérée avec succès
+     *         description: Liste des films
      */
-    app.get("/movies", ListMovies);
+    app.get("/movies", AuthMiddleware, ListMovies);
 
     /**
      * @openapi
      * /movies/{id}:
      *   get:
-     *     tags:
-     *       - Films
+     *     tags: [Films]
      *     summary: Récupérer un film par son ID
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID unique du film
+     *     security:
+     *       - bearerAuth: []
      *     responses:
      *       200:
      *         description: Film trouvé
-     *         content:
-     *           application/json:
-     *             schema:
-     *               $ref: '#/components/schemas/MovieResponse'
-     *       404:
-     *         description: Film introuvable
      */
-    app.get("/movies/:id", GetMovie);
+    app.get("/movies/:id", AuthMiddleware, GetMovie);
 
     /**
      * @openapi
      * /movies/{id}:
      *   patch:
-     *     tags:
-     *       - Films
-     *     summary: Mettre à jour un film
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID du film à modifier
+     *     tags: [Films]
+     *     summary: Mettre à jour un film (ADMIN)
+     *     security:
+     *       - bearerAuth: []
      *     requestBody:
      *       required: true
      *       content:
@@ -252,31 +209,21 @@ export const initHandlers = (app: Application) => {
      *             $ref: '#/components/schemas/UpdateMovieRequest'
      *     responses:
      *       200:
-     *         description: Film mis à jour avec succès
-     *       404:
-     *         description: Film introuvable
+     *         description: Film mis à jour
      */
-    app.patch("/movies/:id", UpdateMovie);
+    app.patch("/movies/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), UpdateMovie);
 
     /**
      * @openapi
      * /movies/{id}:
      *   delete:
-     *     tags:
-     *       - Films
-     *     summary: Supprimer un film
-     *     parameters:
-     *       - in: path
-     *         name: id
-     *         required: true
-     *         schema:
-     *           type: integer
-     *         description: ID du film à supprimer
+     *     tags: [Films]
+     *     summary: Supprimer un film (ADMIN)
+     *     security:
+     *       - bearerAuth: []
      *     responses:
      *       200:
-     *         description: Film supprimé avec succès
-     *       404:
-     *         description: Film introuvable
+     *         description: Film supprimé
      */
-    app.delete("/movies/:id", DeleteMovie);
+    app.delete("/movies/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), DeleteMovie);
 }
