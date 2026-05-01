@@ -1,7 +1,7 @@
 import { Application } from "express";
 import { CreateRoom, GetRoom, ListRooms, UpdateRoom, DeleteRoom } from "./room-handler.js";
 import { CreateMovie, ListMovies, GetMovie, UpdateMovie, DeleteMovie } from "./movie-handler.js";
-
+import { Signup, Login } from "./auth-handler.js"
 export const initHandlers = (app: Application) => {
     // ==========================================
     // ROUTES POUR LES SALLES (ROOMS)
@@ -279,4 +279,46 @@ export const initHandlers = (app: Application) => {
      *         description: Film introuvable
      */
     app.delete("/movies/:id", DeleteMovie);
+    
+    // ==========================================
+    // ROUTES D'AUTHENTIFICATION
+    // ==========================================
+
+    /**
+     * @openapi
+     * /auth/signup:
+     *   post:
+     *     tags:
+     *       - Auth
+     *     summary: Créer un nouveau compte utilisateur
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/AuthRequest'
+     *     responses:
+     *       201:
+     *         description: Utilisateur créé
+     */
+    app.post("/auth/signup", Signup);
+
+    /**
+     * @openapi
+     * /auth/login:
+     *   post:
+     *     tags:
+     *       - Auth
+     *     summary: Se connecter pour obtenir des tokens
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/AuthRequest'
+     *     responses:
+     *       200:
+     *         description: Connexion réussie, renvoie les tokens
+     */
+    app.post("/auth/login", Login);
 }
