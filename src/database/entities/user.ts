@@ -18,7 +18,6 @@ export class User {
     @Column({ type: "varchar", length: 50, default: "CLIENT" })
     role: UserRole;
 
-    // Un utilisateur peut avoir plusieurs Refresh Tokens
     @OneToMany(() => Token, (token) => token.user)
     tokens: Token[];
 

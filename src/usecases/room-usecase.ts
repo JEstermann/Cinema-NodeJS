@@ -81,7 +81,6 @@ export class RoomUsecase {
     const room = await this.getRoom(id);
     if (!room) return null;
 
-    // Object.assign copie toutes les propriétés définies de 'data' vers 'room'
     Object.assign(room, data);
 
     try {

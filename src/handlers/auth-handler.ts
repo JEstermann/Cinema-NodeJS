@@ -14,10 +14,15 @@ export const Signup = async (req: Request, res: Response) => {
     }
 
     const userUsecase = new UserUsecase(AppDataSource.getRepository(User));
+    const authUsecase = new AuthUsecase(
+        AppDataSource.getRepository(User),
+        AppDataSource.getRepository(Token)
+    );
 
     try {
-        const user = await userUsecase.signup(value);
-        return res.status(201).send(user);
+        await userUsecase.signup(value);
+        const result = await authUsecase.login(value.email, value.password);
+        return res.status(201).send(result);
     } catch (err: any) {
         return res.status(400).send({ error: err.message });
     }

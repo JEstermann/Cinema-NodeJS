@@ -3,8 +3,8 @@ import { ListMovieRequest, UpdateMovieRequest } from "../requests/movie-request.
 
 export const CreateMovieValidator = Joi.object({
     title: Joi.string().min(2).max(255).required(),
-    description: Joi.string().allow("").optional(), // Autorise une description vide
-    durationInMinutes: Joi.number().integer().min(1).required(), // Un film doit durer au moins 1 minute !
+    description: Joi.string().allow("").optional(),
+    durationInMinutes: Joi.number().integer().min(1).required(),
 }).options({ abortEarly: false });
 
 export const ListMovieValidator = Joi.object<ListMovieRequest>({
