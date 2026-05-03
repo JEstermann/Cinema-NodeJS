@@ -47,6 +47,52 @@ export const initHandlers = (app: Application) => {
      */
     app.post("/auth/login", Login);
 
+    /**
+     * @openapi
+     * /auth/logout:
+     *   post:
+     *     tags:
+     *       - Auth
+     *     summary: Déconnecter l'utilisateur (Stateful)
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               refreshToken:
+     *                 type: string
+     *     responses:
+     *       200:
+     *         description: Déconnexion réussie
+     */
+    app.post("/auth/logout", Logout);
+
+    /**
+     * @openapi
+     * /auth/refresh:
+     *   post:
+     *     tags:
+     *       - Auth
+     *     summary: Rafraîchir l'Access Token (5 min)
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               refreshToken:
+     *                 type: string
+     *     responses:
+     *       200:
+     *         description: Nouveau token généré
+     *       401:
+     *         description: Session expirée ou invalide
+     */
+    app.post("/auth/refresh", RefreshToken);
+
     // ==========================================
     // ROUTES POUR LES SALLES (ROOMS)
     // ==========================================
@@ -227,37 +273,5 @@ export const initHandlers = (app: Application) => {
      */
     app.delete("/movies/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), DeleteMovie);
 
-    /**
- * @openapi
- * /auth/logout:
- *   post:
- *     tags: [Auth]
- *     summary: Déconnecter l'utilisateur (supprime le token en base)
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               refreshToken:
- *                 type: string
- */
-app.post("/auth/logout", Logout);
 
-/**
- * @openapi
- * /auth/refresh:
- *   post:
- *     tags: [Auth]
- *     summary: Obtenir un nouvel Access Token (5 min) via le Refresh Token
- *     requestBody:
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               refreshToken:
- *                 type: string
- */
-app.post("/auth/refresh", RefreshToken);
 }
