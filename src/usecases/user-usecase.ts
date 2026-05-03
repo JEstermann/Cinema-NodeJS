@@ -16,7 +16,6 @@ export class UserUsecase {
 
         try {
             const savedUser = await this.userRepository.save(user);
-            // On retire le mot de passe avant de renvoyer l'objet pour éviter les fuites
             const { password, ...userWithoutPassword } = savedUser;
             return userWithoutPassword;
         } catch (error: any) {

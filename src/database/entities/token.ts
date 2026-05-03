@@ -7,9 +7,8 @@ export class Token {
     id: number;
 
     @Column("varchar", { length: 255 })
-    token: string; 
+    token: string;
 
-    // onDelete: "CASCADE" signifie que si on supprime l'utilisateur, on supprime aussi ses tokens !
     @ManyToOne(() => User, (user) => user.tokens, { onDelete: "CASCADE" })
     @JoinColumn({ name: "userId" })
     user: User;

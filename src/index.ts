@@ -1,11 +1,20 @@
 import "reflect-metadata";
 import express from "express";
+import cors from "cors";
 import { initHandlers } from "./handlers/routes.js";
 import { AppDataSource } from "./database/database.js";
 import { swaggerDocs } from "./handlers/swagger/swagger.js";
 
 const app = express();
 const PORT = process.env.APP_PORT || 3000;
+
+app.use(cors({
+    origin: ["http://localhost:3000", "http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
 app.use(express.json())
 
 initHandlers(app);

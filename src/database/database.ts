@@ -14,6 +14,6 @@ export const AppDataSource = new DataSource({
     database: process.env.DB_DATABASE as string,
     
     synchronize: true, 
-    logging:true,
+    logging:false,
     entities: [Room,Movie,User,Token]
 });
