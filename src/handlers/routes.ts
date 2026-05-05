@@ -5,6 +5,13 @@ import { Signup, Login, Logout, RefreshToken } from "./auth-handler.js";
 import { AuthMiddleware, RoleMiddleware } from "./middlewares/auth-middleware.js";
 import { CreateScreening, DeleteScreening, GetScreening, ListScreenings, UpdateScreening } from "./screening-handler.js";
 import { DepositMoney, GetMyBalance, ListMyTransactions, WithdrawMoney } from "./wallet-handler.js";
+import {
+    GetMyTicketDetail,
+    ListMyTickets,
+    PurchaseSimpleTicket,
+    PurchaseSuperTicket,
+    UseTicketForScreening
+} from "./ticket-handler.js";
 
 export const initHandlers = (app: Application) => {
     app.post("/auth/signup", Signup);
@@ -233,6 +240,106 @@ export const initHandlers = (app: Application) => {
      *         description: Liste des transactions
      */
     app.get("/wallet/transactions", AuthMiddleware, ListMyTransactions);
+
+    /**
+     * @openapi
+     * /tickets:
+     *   get:
+     *     tags: [Billets]
+     *     summary: Mes billets
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Liste des billets de l'utilisateur
+     */
+    app.get("/tickets", AuthMiddleware, ListMyTickets);
+
+    /**
+     * @openapi
+     * /tickets/simple:
+     *   post:
+     *     tags: [Billets]
+     *     summary: Acheter un billet simple pour une seance
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/BuySimpleTicketRequest'
+     *     responses:
+     *       201:
+     *         description: Billet cree
+     *       404:
+     *         description: Seance introuvable
+     *       409:
+     *         description: Solde insuffisant ou billet deja present
+     */
+    app.post("/tickets/simple", AuthMiddleware, PurchaseSimpleTicket);
+
+    /**
+     * @openapi
+     * /tickets/super:
+     *   post:
+     *     tags: [Billets]
+     *     summary: Acheter un super billet (10 seances)
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       201:
+     *         description: Super billet cree
+     *       409:
+     *         description: Solde insuffisant
+     */
+    app.post("/tickets/super", AuthMiddleware, PurchaseSuperTicket);
+
+    /**
+     * @openapi
+     * /tickets/use:
+     *   post:
+     *     tags: [Billets]
+     *     summary: Utiliser un billet pour entrer a une seance
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UseTicketRequest'
+     *     responses:
+     *       200:
+     *         description: Utilisation enregistree
+     *       404:
+     *         description: Billet ou seance introuvable
+     *       409:
+     *         description: Billet epuise ou mauvaise seance
+     */
+    app.post("/tickets/use", AuthMiddleware, UseTicketForScreening);
+
+    /**
+     * @openapi
+     * /tickets/{id}:
+     *   get:
+     *     tags: [Billets]
+     *     summary: Detail d'un billet et historique d'utilisation
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *     responses:
+     *       200:
+     *         description: Detail billet
+     *       404:
+     *         description: Billet introuvable
+     */
+    app.get("/tickets/:id", AuthMiddleware, GetMyTicketDetail);
 
 
 }
