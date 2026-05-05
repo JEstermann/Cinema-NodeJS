@@ -193,15 +193,7 @@ export function TicketsPage() {
                 {tickets.length === 0 ? <p className="text-sm text-stone-500">Aucun billet.</p> : null}
             </Card>
 
-            <Card title="Détail brut (API GET /tickets/:id)">
-                <form className="flex flex-wrap gap-3 items-end" onSubmit={loadDetail}>
-                    <Field label="ID billet" type="number" min={1} value={detailId} onChange={(e) => setDetailId(e.target.value)} />
-                    <Button type="submit">Charger</Button>
-                </form>
-                {detailJson ? (
-                    <pre className="mt-4 overflow-x-auto rounded-lg bg-cinema-950 p-4 text-xs text-stone-400">{detailJson}</pre>
-                ) : null}
-            </Card>
+         
         </div>
     );
 }
