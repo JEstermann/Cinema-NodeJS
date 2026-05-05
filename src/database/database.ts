@@ -5,6 +5,7 @@ import { Movie } from "./entities/movie.js";
 import { User } from "./entities/user.js"
 import { Token } from "./entities/token.js"
 import { Screening } from "./entities/screening.js";
+import { WalletTransaction } from "./entities/wallet-transaction.js";
 
 export const AppDataSource = new DataSource({
     type: "mysql",
@@ -16,5 +17,5 @@ export const AppDataSource = new DataSource({
     
     synchronize: true, 
     logging:false,
-    entities: [Room, Movie, User, Token, Screening]
+    entities: [Room, Movie, User, Token, Screening, WalletTransaction]
 });
