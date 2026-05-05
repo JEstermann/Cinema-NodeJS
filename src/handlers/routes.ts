@@ -4,6 +4,7 @@ import { CreateMovie, ListMovies, GetMovie, UpdateMovie, DeleteMovie } from "./m
 import { Signup, Login, Logout, RefreshToken } from "./auth-handler.js";
 import { AuthMiddleware, RoleMiddleware } from "./middlewares/auth-middleware.js";
 import { CreateScreening, DeleteScreening, GetScreening, ListScreenings, UpdateScreening } from "./screening-handler.js";
+import { DepositMoney, GetMyBalance, ListMyTransactions, WithdrawMoney } from "./wallet-handler.js";
 
 export const initHandlers = (app: Application) => {
     // ==========================================
@@ -402,6 +403,76 @@ export const initHandlers = (app: Application) => {
      *         description: Seance introuvable
      */
     app.delete("/screenings/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), DeleteScreening);
+
+    /**
+     * @openapi
+     * /wallet/balance:
+     *   get:
+     *     tags: [Wallet]
+     *     summary: Voir son solde en euros
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Solde courant
+     */
+    app.get("/wallet/balance", AuthMiddleware, GetMyBalance);
+
+    /**
+     * @openapi
+     * /wallet/deposit:
+     *   post:
+     *     tags: [Wallet]
+     *     summary: Deposer de l'argent
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/WalletAmountRequest'
+     *     responses:
+     *       200:
+     *         description: Nouveau solde
+     */
+    app.post("/wallet/deposit", AuthMiddleware, DepositMoney);
+
+    /**
+     * @openapi
+     * /wallet/withdraw:
+     *   post:
+     *     tags: [Wallet]
+     *     summary: Retirer de l'argent
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/WalletAmountRequest'
+     *     responses:
+     *       200:
+     *         description: Nouveau solde
+     *       409:
+     *         description: Solde insuffisant
+     */
+    app.post("/wallet/withdraw", AuthMiddleware, WithdrawMoney);
+
+    /**
+     * @openapi
+     * /wallet/transactions:
+     *   get:
+     *     tags: [Wallet]
+     *     summary: Voir l'historique de ses transactions
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Liste des transactions
+     */
+    app.get("/wallet/transactions", AuthMiddleware, ListMyTransactions);
 
 
 }
