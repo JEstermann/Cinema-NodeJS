@@ -1,130 +1,139 @@
-import React, { createContext, useState, useCallback, useEffect } from 'react';
-import { User, AuthResponse } from '../types';
-import { auth } from '../api';
+import {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+    type ReactNode
+} from "react";
+import { apiFetch, readError } from "../api/client";
+import { decodeJwtPayload, isAdminRole } from "../lib/jwt";
 
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  isAuthenticated: boolean;
-  isAdmin: boolean;
+type AuthState = {
+    accessToken: string | null;
+    refreshToken: string | null;
+    role: string | undefined;
+    userId: number | undefined;
+    emailHint: string | undefined;
+};
+
+type AuthContextValue = AuthState & {
+    isAuthenticated: boolean;
+    isAdmin: boolean;
+    setSession: (accessToken: string, refreshToken: string) => void;
+    logout: () => Promise<void>;
+    refreshTokensFromStorage: () => void;
+};
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+function loadFromStorage(): AuthState {
+    const accessToken = localStorage.getItem("accessToken");
+    const refreshToken = localStorage.getItem("refreshToken");
+    const payload = accessToken ? decodeJwtPayload(accessToken) : null;
+    const emailHint = localStorage.getItem("cinemaEmailHint") ?? undefined;
+    return {
+        accessToken,
+        refreshToken,
+        role: payload?.role,
+        userId: payload?.userId,
+        emailHint
+    };
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export function AuthProvider({ children }: { children: ReactNode }) {
+    const [state, setState] = useState<AuthState>(() => loadFromStorage());
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const logoutTimerRef = React.useRef<ReturnType<typeof setTimeout>>();
+    const refreshTokensFromStorage = useCallback(() => {
+        setState(loadFromStorage());
+    }, []);
 
-  const setupLogoutTimer = useCallback((token: string) => {
-    if (logoutTimerRef.current) {
-      clearTimeout(logoutTimerRef.current);
-    }
+    useEffect(() => {
+        const handler = () => refreshTokensFromStorage();
+        window.addEventListener("cinema-token-updated", handler);
+        window.addEventListener("storage", handler);
+        return () => {
+            window.removeEventListener("cinema-token-updated", handler);
+            window.removeEventListener("storage", handler);
+        };
+    }, [refreshTokensFromStorage]);
 
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      if (payload.exp) {
-        const now = Math.floor(Date.now() / 1000);
-        const timeUntilExpiry = (payload.exp - now) * 1000;
-        
-        if (timeUntilExpiry > 0) {
-          console.log(`Token expires in ${Math.round(timeUntilExpiry / 1000)} seconds`);
-          logoutTimerRef.current = setTimeout(() => {
-            console.log('Token expired, logging out...');
-            localStorage.clear();
-            setUser(null);
-            window.location.href = '/login';
-          }, timeUntilExpiry);
+    const setSession = useCallback((accessToken: string, refreshToken: string) => {
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+        const payload = decodeJwtPayload(accessToken);
+        setState({
+            accessToken,
+            refreshToken,
+            role: payload?.role,
+            userId: payload?.userId,
+            emailHint: localStorage.getItem("cinemaEmailHint") ?? undefined
+        });
+    }, []);
+
+    const logout = useCallback(async () => {
+        const rt = localStorage.getItem("refreshToken");
+        if (rt) {
+            try {
+                await apiFetch("/auth/logout", {
+                    method: "POST",
+                    body: JSON.stringify({ refreshToken: rt })
+                });
+            } catch {
+                /* ignore */
+            }
         }
-      }
-    } catch (error) {
-      console.error('Error setting up logout timer:', error);
-    }
-  }, []);
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        setState({
+            accessToken: null,
+            refreshToken: null,
+            role: undefined,
+            userId: undefined,
+            emailHint: localStorage.getItem("cinemaEmailHint") ?? undefined
+        });
+    }, []);
 
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        if (payload.userId) {
-          setUser({
-            id: payload.userId,
-            email: localStorage.getItem('userEmail') || 'unknown',
-            role: payload.role || 'USER'
-          });
-          setupLogoutTimer(token);
-        }
-      } catch (error) {
-        console.error('Error parsing token:', error);
-        localStorage.clear();
-      }
-    }
-    setLoading(false);
-  }, [setupLogoutTimer]);
+    const value = useMemo<AuthContextValue>(
+        () => ({
+            ...state,
+            isAuthenticated: Boolean(state.accessToken && state.refreshToken),
+            isAdmin: isAdminRole(state.role),
+            setSession,
+            logout,
+            refreshTokensFromStorage
+        }),
+        [state, setSession, logout, refreshTokensFromStorage]
+    );
 
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      const { data } = await auth.login(email, password);
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('refreshToken', data.refreshToken);
-      localStorage.setItem('userEmail', data.user.email);
-      setUser(data.user);
-      setupLogoutTimer(data.accessToken);
-    } catch (error) {
-      throw error;
-    }
-  }, [setupLogoutTimer]);
+    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
 
-  const signup = useCallback(async (email: string, password: string) => {
-    try {
-      const { data } = await auth.signup(email, password);
-      localStorage.setItem('accessToken', data.accessToken);
-      localStorage.setItem('userEmail', data.user.email);
-      localStorage.setItem('refreshToken', data.refreshToken);
-      setUser(data.user);
-      setupLogoutTimer(data.accessToken);
-    } catch (error) {
-      throw error;
-    }
-  }, [setupLogoutTimer]);
+export function useAuth(): AuthContextValue {
+    const ctx = useContext(AuthContext);
+    if (!ctx) throw new Error("useAuth doit être utilisé dans AuthProvider");
+    return ctx;
+}
 
-  const logout = useCallback(async () => {
-    if (logoutTimerRef.current) {
-      clearTimeout(logoutTimerRef.current);
-    }
-    try {
-      await auth.logout();
-    } finally {
-      localStorage.clear();
-      setUser(null);
-    }
-  }, []);
+export async function loginRequest(email: string, password: string): Promise<{ accessToken: string; refreshToken: string }> {
+    const res = await fetch(`${(import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/$/, "")}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) throw new Error(await readError(res));
+    return res.json() as Promise<{ accessToken: string; refreshToken: string }>;
+}
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        login,
-        signup,
-        logout,
-        isAuthenticated: !!user,
-        isAdmin: user?.role === 'ADMIN',
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export const useAuth = () => {
-  const context = React.useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
-};
+export async function signupRequest(email: string, password: string): Promise<void> {
+    const res = await fetch(`${(import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/$/, "")}/auth/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    });
+    if (!res.ok) {
+        const err = await readError(res);
+        throw new Error(err);
+    }
+}
