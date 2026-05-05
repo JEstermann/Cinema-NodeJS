@@ -20,21 +20,18 @@ export class AuthUsecase {
         const accessSecret = process.env.JWT_SECRET as string;
         const refreshSecret = process.env.JWT_REFRESH_SECRET as string;
 
-        // Access Token : Durée de vie stricte de 5 minutes
         const accessToken = jwt.sign(
             { userId: user.id, role: user.role }, 
             accessSecret, 
             { expiresIn: '5m' }
         );
 
-        // Refresh Token : Durée de vie plus longue 7jours
         const refreshTokenStr = jwt.sign(
             { userId: user.id }, 
             refreshSecret, 
             { expiresIn: '7d' }
         );
 
-        // Sauvegarde de l'état en base de données
         const tokenEntity = this.tokenRepository.create({ 
             token: refreshTokenStr, 
             user: user 
@@ -45,8 +42,16 @@ export class AuthUsecase {
     }
 
     async logout(refreshToken: string): Promise<void> {
-        // On supprime physiquement le token de la base : c'est l'aspect "Stateful"
-        await this.tokenRepository.delete({ token: refreshToken });
+        const tokenRecord = await this.tokenRepository.findOne({
+            where: { token: refreshToken },
+            relations: ["user"]
+        });
+
+        if (!tokenRecord) {
+            return;
+        }
+
+        await this.tokenRepository.delete({ user: { id: tokenRecord.user.id } });
     }
 
     async refresh(refreshToken: string): Promise<{ accessToken: string }> {
@@ -64,7 +69,6 @@ export class AuthUsecase {
             throw new Error("Session expirée");
         }
 
-        // On génère un nouvel Access Token de 5 minutes maximum
         const accessSecret = process.env.JWT_SECRET as string;
         const accessToken = jwt.sign(
             { userId: tokenRecord.user.id, role: tokenRecord.user.role }, 

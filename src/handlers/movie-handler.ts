@@ -7,7 +7,6 @@ import { CreateMovieValidator, ListMovieValidator, UpdateMovieValidator } from "
 import { generateValidationErrorMessage } from "./validators/utils.js";
 import Joi from "joi"; 
 
-// Petit validateur rapide pour vérifier que l'ID dans l'URL est bien un nombre
 const MovieIdValidator = Joi.object({ id: Joi.number().min(1).required() });
 
 export const CreateMovie = async (req: Request, res: Response) => {
@@ -23,7 +22,7 @@ export const CreateMovie = async (req: Request, res: Response) => {
         return res.status(201).send(movieCreated); 
     } catch (error: unknown) {
         if (error instanceof ResourceConflictError) {
-            return res.status(409).send({ error: error.message }); // 409 = Conflit (titre déjà pris)
+            return res.status(409).send({ error: error.message });
         }
         return res.status(500).send({ error: "Erreur interne du serveur" });
     }
