@@ -1,17 +1,23 @@
-FROM node:24 as build
-
+# --- Build TypeScript → dist/ ---
+FROM node:22-alpine AS builder
 WORKDIR /app
 
-COPY package*.json ./
-
-RUN npm i
+COPY package.json ./
+RUN npm install
 
 COPY tsconfig.json ./
-
-COPY src ./src/
-
+COPY src ./src
 RUN npm run build
 
-EXPOSE 3000
+# --- Runtime : deps prod + dist uniquement ---
+FROM node:22-alpine AS runner
+WORKDIR /app
+ENV NODE_ENV=production
 
-CMD [ "npm", "start" ]
+COPY package.json ./
+RUN npm install --omit=dev
+
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 3000
+CMD ["node", "dist/index.js"]

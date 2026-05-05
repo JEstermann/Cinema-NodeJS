@@ -17,7 +17,7 @@ export const AppDataSource = new DataSource({
     password: process.env.DB_PASSWORD as string,
     database: process.env.DB_DATABASE as string,
     
-    synchronize: true, 
+    synchronize: false, 
     logging:false,
     entities: [Room, Movie, User, Token, Screening, WalletTransaction, Ticket, TicketUsage]
 });
