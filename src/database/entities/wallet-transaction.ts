@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from "typeorm";
 import { User } from "./user.js";
 
-export type WalletTransactionType = "DEPOT" | "RETRAIT";
+export type WalletTransactionType = "DEPOSIT" | "WITHDRAW";
 
 @Entity()
 export class WalletTransaction {
