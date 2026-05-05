@@ -1,4 +1,3 @@
-
 import Joi from "joi";
 export const AuthValidator = Joi.object({
     email: Joi.string().email().required(),

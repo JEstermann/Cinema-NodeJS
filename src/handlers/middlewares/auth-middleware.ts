@@ -34,7 +34,6 @@ export const AuthMiddleware = (req: CustomRequest, res: Response, next: NextFunc
     }
 };
 
-// Autorise uniquement certains rôles (ex: ADMIN)
 export const RoleMiddleware = (roles: string[]) => {
     return (req: CustomRequest, res: Response, next: NextFunction) => {
         const user = req.user;

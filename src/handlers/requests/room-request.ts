@@ -1,4 +1,3 @@
-
 export interface CreateRoom {
     id: number,
     name: string,

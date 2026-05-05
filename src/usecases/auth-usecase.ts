@@ -50,7 +50,16 @@ export class AuthUsecase {
     }
 
     async logout(refreshToken: string): Promise<void> {
-        await this.tokenRepository.delete({ token: refreshToken });
+        const tokenRecord = await this.tokenRepository.findOne({
+            where: { token: refreshToken },
+            relations: ["user"]
+        });
+
+        if (!tokenRecord) {
+            return;
+        }
+
+        await this.tokenRepository.delete({ user: { id: tokenRecord.user.id } });
     }
 
     async refresh(refreshToken: string): Promise<{ accessToken: string }> {

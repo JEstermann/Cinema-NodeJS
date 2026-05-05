@@ -6,8 +6,8 @@ export class Token {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column("varchar", { length: 255 })
-    token: string;
+    @Column("varchar", { length: 512, unique: true })
+    token: string; 
 
     @ManyToOne(() => User, (user) => user.tokens, { onDelete: "CASCADE" })
     @JoinColumn({ name: "userId" })

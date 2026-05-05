@@ -1,4 +1,3 @@
-
 export interface CreateMovieRequest {
     title: string;
     description?: string;
