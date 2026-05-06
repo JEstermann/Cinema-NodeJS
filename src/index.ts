@@ -3,6 +3,7 @@ import express from "express";
 import { initHandlers } from "./handlers/routes.js";
 import { AppDataSource } from "./database/database.js";
 import { swaggerDocs } from "./handlers/swagger/swagger.js";
+import { getPublicApiBaseUrl } from "./config/public-api.js";
 
 const app = express();
 const PORT = process.env.APP_PORT || 3000;
@@ -27,7 +28,8 @@ try {
     await AppDataSource.initialize();
     console.log("Database initialized successfully");
     app.listen(PORT, () => {
-        console.log("App is listening on port " + PORT)
+        console.log("App is listening on port " + PORT);
+        console.log("API publique (Swagger): " + getPublicApiBaseUrl());
     })
 } catch(error) {
     console.log(error)

@@ -12,3 +12,5 @@
 **web** | 9080 | 80 (nginx) | `http://localhost:9080` |
 **phpmyadmin** | 8081 | 80 | `http://localhost:8081` 
 **mysql-db** | *(non publié)* | 3306 | Accès interne Docker 
+
+docker compose up -d --build

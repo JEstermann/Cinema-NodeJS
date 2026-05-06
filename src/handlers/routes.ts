@@ -14,24 +14,298 @@ import {
 } from "./ticket-handler.js";
 
 export const initHandlers = (app: Application) => {
+    /**
+     * @openapi
+     * /auth/signup:
+     *   post:
+     *     tags: [Authentification]
+     *     summary: Inscription et obtention des jetons
+     *     security: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/AuthCredentialsRequest'
+     *     responses:
+     *       201:
+     *         description: Compte cree
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/AuthLoginResponse'
+     *       400:
+     *         description: Erreur de validation ou email deja utilise
+     */
     app.post("/auth/signup", Signup);
 
+    /**
+     * @openapi
+     * /auth/login:
+     *   post:
+     *     tags: [Authentification]
+     *     summary: Connexion
+     *     security: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/AuthCredentialsRequest'
+     *     responses:
+     *       200:
+     *         description: Jetons d'acces
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/AuthLoginResponse'
+     *       401:
+     *         description: Identifiants invalides
+     */
     app.post("/auth/login", Login);
 
+    /**
+     * @openapi
+     * /auth/logout:
+     *   post:
+     *     tags: [Authentification]
+     *     summary: Deconnexion (invalidation du refresh token)
+     *     security: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/RefreshTokenBody'
+     *     responses:
+     *       200:
+     *         description: Deconnexion reussie
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/AuthMessageResponse'
+     *       400:
+     *         description: Refresh token manquant
+     */
     app.post("/auth/logout", Logout);
 
+    /**
+     * @openapi
+     * /auth/refresh:
+     *   post:
+     *     tags: [Authentification]
+     *     summary: Rafraichir le jeton d'acces
+     *     security: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/RefreshTokenBody'
+     *     responses:
+     *       200:
+     *         description: Nouveau jeton d'acces
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/RefreshAccessResponse'
+     *       400:
+     *         description: Refresh token manquant
+     *       401:
+     *         description: Refresh token invalide ou expire
+     */
     app.post("/auth/refresh", RefreshToken);
 
+    /**
+     * @openapi
+     * /rooms:
+     *   post:
+     *     tags: [Salles]
+     *     summary: Creer une salle (ADMIN)
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/CreateRoomRequest'
+     *     responses:
+     *       201:
+     *         description: Salle creee
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/CreateRoomResponse'
+     *       400:
+     *         description: Validation ou nom deja utilise
+     *       401:
+     *         description: Non authentifie
+     *       403:
+     *         description: Droits insuffisants ou token invalide
+     */
     app.post("/rooms", AuthMiddleware, RoleMiddleware(["ADMIN"]), CreateRoom);
 
+    /**
+     * @openapi
+     * /rooms:
+     *   get:
+     *     tags: [Salles]
+     *     summary: Lister les salles
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: query
+     *         name: page
+     *         schema:
+     *           type: integer
+     *           minimum: 1
+     *       - in: query
+     *         name: size
+     *         schema:
+     *           type: integer
+     *           minimum: 1
+     *           maximum: 100
+     *       - in: query
+     *         name: name
+     *         schema:
+     *           type: string
+     *       - in: query
+     *         name: capacityMax
+     *         schema:
+     *           type: integer
+     *     responses:
+     *       200:
+     *         description: Liste paginee des salles
+     *       400:
+     *         description: Parametres invalides
+     *       401:
+     *         description: Non authentifie
+     *       403:
+     *         description: Token invalide ou expire
+     */
     app.get("/rooms", AuthMiddleware, ListRooms);
 
+    /**
+     * @openapi
+     * /rooms/{id}:
+     *   get:
+     *     tags: [Salles]
+     *     summary: Detail d'une salle
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *     responses:
+     *       200:
+     *         description: Salle trouvee
+     *       400:
+     *         description: ID invalide
+     *       401:
+     *         description: Non authentifie
+     *       403:
+     *         description: Token invalide ou expire
+     *       404:
+     *         description: Salle introuvable
+     */
     app.get("/rooms/:id", AuthMiddleware, GetRoom);
 
+    /**
+     * @openapi
+     * /rooms/{id}:
+     *   patch:
+     *     tags: [Salles]
+     *     summary: Modifier une salle (ADMIN)
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UpdateRoomBody'
+     *     responses:
+     *       200:
+     *         description: Salle mise a jour
+     *       400:
+     *         description: Validation echouee
+     *       401:
+     *         description: Non authentifie
+     *       403:
+     *         description: Droits insuffisants ou token invalide
+     *       404:
+     *         description: Salle introuvable
+     */
     app.patch("/rooms/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), UpdateRoom);
 
+    /**
+     * @openapi
+     * /rooms/{id}:
+     *   delete:
+     *     tags: [Salles]
+     *     summary: Supprimer une salle (ADMIN)
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *     responses:
+     *       200:
+     *         description: Salle supprimee
+     *       400:
+     *         description: ID invalide
+     *       401:
+     *         description: Non authentifie
+     *       403:
+     *         description: Droits insuffisants ou token invalide
+     *       404:
+     *         description: Salle introuvable
+     */
     app.delete("/rooms/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), DeleteRoom);
 
+    /**
+     * @openapi
+     * /movies:
+     *   post:
+     *     tags: [Films]
+     *     summary: Creer un film (ADMIN)
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/CreateMovieRequest'
+     *     responses:
+     *       201:
+     *         description: Film cree
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/MovieEntityResponse'
+     *       400:
+     *         description: Validation echouee
+     *       401:
+     *         description: Non authentifie
+     *       403:
+     *         description: Droits insuffisants ou token invalide
+     *       409:
+     *         description: Conflit (ex. titre duplique)
+     */
     app.post("/movies", AuthMiddleware, RoleMiddleware(["ADMIN"]), CreateMovie);
 
     /**
@@ -57,6 +331,25 @@ export const initHandlers = (app: Application) => {
      *     responses:
      *       200:
      *         description: Liste des films
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 data:
+     *                   type: array
+     *                   items:
+     *                     $ref: '#/components/schemas/MovieEntityResponse'
+     *                 page:
+     *                   type: integer
+     *                 pageSize:
+     *                   type: integer
+     *                 totalCount:
+     *                   type: integer
+     *                 totalPages:
+     *                   type: integer
+     *       400:
+     *         description: Parametres invalides
      */
     app.get("/movies", ListMovies);
 
@@ -76,13 +369,81 @@ export const initHandlers = (app: Application) => {
      *     responses:
      *       200:
      *         description: Film trouve
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/MovieEntityResponse'
+     *       400:
+     *         description: ID invalide
      *       404:
      *         description: Film introuvable
      */
     app.get("/movies/:id", GetMovie);
 
+    /**
+     * @openapi
+     * /movies/{id}:
+     *   patch:
+     *     tags: [Films]
+     *     summary: Modifier un film (ADMIN)
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             $ref: '#/components/schemas/UpdateMovieBody'
+     *     responses:
+     *       200:
+     *         description: Film mis a jour
+     *         content:
+     *           application/json:
+     *             schema:
+     *               $ref: '#/components/schemas/MovieEntityResponse'
+     *       400:
+     *         description: Validation echouee
+     *       401:
+     *         description: Non authentifie
+     *       403:
+     *         description: Droits insuffisants ou token invalide
+     *       404:
+     *         description: Film introuvable
+     *       409:
+     *         description: Conflit (ex. titre duplique)
+     */
     app.patch("/movies/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), UpdateMovie);
 
+    /**
+     * @openapi
+     * /movies/{id}:
+     *   delete:
+     *     tags: [Films]
+     *     summary: Supprimer un film (ADMIN)
+     *     security:
+     *       - bearerAuth: []
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *     responses:
+     *       200:
+     *         description: Film supprime
+     *       400:
+     *         description: ID invalide
+     *       401:
+     *         description: Non authentifie
+     *       403:
+     *         description: Droits insuffisants ou token invalide
+     */
     app.delete("/movies/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), DeleteMovie);
 
     /**
