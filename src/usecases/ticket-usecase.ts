@@ -149,11 +149,19 @@ export class TicketUsecase {
         });
     }
 
-    async getTicketWithUsages(userId: number, ticketId: number): Promise<Ticket | null> {
+    async getTicketWithUsages(userId: number, ticketId: number): Promise<(Ticket & { usages: TicketUsage[] }) | null> {
         const ticket = await this.ticketRepository.findOne({
             where: { id: ticketId, user: { id: userId } },
-            relations: ["screening", "screening.movie", "usages", "usages.screening", "usages.screening.movie"]
+            relations: ["screening", "screening.movie"]
         });
-        return ticket;
+        if (!ticket) {
+            return null;
+        }
+        const usages = await this.ticketUsageRepository.find({
+            where: { ticket: { id: ticketId } },
+            relations: ["screening", "screening.movie"],
+            order: { usedAt: "DESC" }
+        });
+        return Object.assign(ticket, { usages });
     }
 }

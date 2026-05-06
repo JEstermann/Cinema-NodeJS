@@ -7,7 +7,7 @@ export class TicketUsage {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Ticket, (ticket) => ticket.usages, { onDelete: "CASCADE" })
+    @ManyToOne(() => Ticket, { onDelete: "CASCADE" })
     @JoinColumn({ name: "ticketId" })
     ticket: Ticket;
 

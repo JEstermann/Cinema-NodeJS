@@ -1,6 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, OneToMany } from "typeorm";
-import { Token } from "./token.js";
-import { WalletTransaction } from "./wallet-transaction.js";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
 export type UserRole = "CLIENT" | "ADMIN" | "SUPER_ADMIN";
 
@@ -13,20 +11,13 @@ export class User {
     email: string;
 
     @Column("varchar", { length: 255 })
-    password: string; 
+    password: string;
 
-    
     @Column({ type: "varchar", length: 50, default: "CLIENT" })
     role: UserRole;
 
-    @OneToMany(() => Token, (token) => token.user)
-    tokens: Token[];
-
     @Column("decimal", { precision: 10, scale: 2, default: 0 })
     balance: number;
-
-    @OneToMany(() => WalletTransaction, (transaction) => transaction.user)
-    walletTransactions: WalletTransaction[];
 
     @CreateDateColumn()
     createdAt: Date;

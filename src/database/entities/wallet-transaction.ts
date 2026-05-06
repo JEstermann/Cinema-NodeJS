@@ -8,7 +8,7 @@ export class WalletTransaction {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => User, (user) => user.walletTransactions, { onDelete: "CASCADE" })
+    @ManyToOne(() => User, { onDelete: "CASCADE" })
     @JoinColumn({ name: "userId" })
     user: User;
 

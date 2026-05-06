@@ -9,7 +9,7 @@ export class Token {
     @Column("varchar", { length: 512, unique: true })
     token: string; 
 
-    @ManyToOne(() => User, (user) => user.tokens, { onDelete: "CASCADE" })
+    @ManyToOne(() => User, { onDelete: "CASCADE" })
     @JoinColumn({ name: "userId" })
     user: User;
 

@@ -1,7 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from "typeorm";
 import { User } from "./user.js";
 import { Screening } from "./screening.js";
-import { TicketUsage } from "./ticket-usage.js";
 
 export type TicketKind = "SIMPLE" | "SUPER";
 
@@ -26,9 +25,6 @@ export class Ticket {
 
     @Column("decimal", { precision: 10, scale: 2 })
     pricePaid: number;
-
-    @OneToMany(() => TicketUsage, (usage) => usage.ticket)
-    usages: TicketUsage[];
 
     @CreateDateColumn()
     createdAt: Date;
