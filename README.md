@@ -17,7 +17,7 @@
 
 | Domaine | Usage |
 |--------|--------|
-| **docs.aimassi.dev** | Documentation Swagger — nginx redirige automatiquement vers `/docs`. |
+| **api.aimassi.dev/docs** | Documentation Swagger — nginx redirige automatiquement vers `/docs`. |
 | **db.aimassi.dev** | MySQL (accès selon ta conf réseau / pare-feu). |
 | **zenith.aimassi.dev** | Front Cinéma Zenith (appli web). |
 

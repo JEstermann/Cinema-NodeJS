@@ -1,7 +1,16 @@
-const getApiBase = (): string => {
-    const raw = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
-    return raw.replace(/\/$/, "");
-};
+/** API prod (HTTPS) si aucune variable au build ; surcharge avec `VITE_API_URL`. */
+const DEFAULT_PROD_API_BASE = "https://api.massi.dev";
+
+export function getApiBase(): string {
+    const raw = import.meta.env.VITE_API_URL;
+    if (typeof raw === "string" && raw.trim() !== "") {
+        return raw.trim().replace(/\/$/, "");
+    }
+    if (import.meta.env.DEV) {
+        return "http://localhost:3000";
+    }
+    return DEFAULT_PROD_API_BASE;
+}
 
 async function rawFetch(path: string, init?: RequestInit, accessToken?: string | null): Promise<Response> {
     const headers = new Headers(init?.headers);

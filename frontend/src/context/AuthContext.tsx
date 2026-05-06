@@ -7,7 +7,7 @@ import {
     useState,
     type ReactNode
 } from "react";
-import { apiFetch, readError } from "../api/client";
+import { apiFetch, getApiBase, readError } from "../api/client";
 import { decodeJwtPayload, isAdminRole } from "../lib/jwt";
 
 type AuthState = {
@@ -139,7 +139,7 @@ export function useAuth(): AuthContextValue {
 }
 
 export async function loginRequest(email: string, password: string): Promise<{ accessToken: string; refreshToken: string }> {
-    const res = await fetch(`${(import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/$/, "")}/auth/login`, {
+    const res = await fetch(`${getApiBase()}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
@@ -152,7 +152,7 @@ export async function signupRequest(
     email: string,
     password: string
 ): Promise<{ accessToken: string; refreshToken: string }> {
-    const res = await fetch(`${(import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/$/, "")}/auth/signup`, {
+    const res = await fetch(`${getApiBase()}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
