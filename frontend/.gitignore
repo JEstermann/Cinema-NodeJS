@@ -1,5 +1,10 @@
 node_modules
 dist
+vite.config.js
+
+# Le frontend reste en TS dans src/ ; la sortie du build est uniquement dans dist/
+src/**/*.js
+src/**/*.jsx
 .env
 *.local
 .DS_Store

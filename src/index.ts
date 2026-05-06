@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import express from "express";
-import cors from "cors";
 import { initHandlers } from "./handlers/routes.js";
 import { AppDataSource } from "./database/database.js";
 import { swaggerDocs } from "./handlers/swagger/swagger.js";

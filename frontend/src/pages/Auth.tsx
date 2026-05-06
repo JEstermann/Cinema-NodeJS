@@ -26,8 +26,10 @@ export const Login: React.FC = () => {
       setTimeout(() => {
         navigate('/movies');
       }, 500);
-    } catch (error: any) {
-      message.error(error.response?.data?.message || 'Une erreur est survenue');
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Une erreur est survenue';
+      message.error(msg);
+    } finally {
       setLoading(false);
     }
   };

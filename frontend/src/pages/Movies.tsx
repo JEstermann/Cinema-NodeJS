@@ -125,7 +125,7 @@ export const Movies: React.FC = () => {
         columns={columns}
         dataSource={data || []}
         loading={loading}
-        rowKey={(record) => record.id}
+        rowKey={(record: Movie) => record.id}
         pagination={{ pageSize: 10 }}
       />
 

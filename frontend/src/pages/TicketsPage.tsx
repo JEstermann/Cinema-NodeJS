@@ -19,8 +19,6 @@ export function TicketsPage() {
     const [screeningForBuy, setScreeningForBuy] = useState("");
     const [useTicketId, setUseTicketId] = useState("");
     const [useScreeningId, setUseScreeningId] = useState("");
-    const [detailId, setDetailId] = useState("");
-    const [detailJson, setDetailJson] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [info, setInfo] = useState<string | null>(null);
 
@@ -97,18 +95,6 @@ export function TicketsPage() {
         }
         setInfo("Entrée enregistrée pour cette séance.");
         await refresh();
-    }
-
-    async function loadDetail(e: FormEvent) {
-        e.preventDefault();
-        setDetailJson(null);
-        const res = await apiFetch(`/tickets/${detailId}`);
-        if (!res.ok) {
-            setError(await readError(res));
-            return;
-        }
-        const data = await res.json();
-        setDetailJson(JSON.stringify(data, null, 2));
     }
 
     return (

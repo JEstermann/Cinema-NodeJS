@@ -22,6 +22,8 @@ type AuthContextValue = AuthState & {
     isAuthenticated: boolean;
     isAdmin: boolean;
     setSession: (accessToken: string, refreshToken: string) => void;
+    login: (email: string, password: string) => Promise<void>;
+    signup: (email: string, password: string) => Promise<void>;
     logout: () => Promise<void>;
     refreshTokensFromStorage: () => void;
 };
@@ -95,16 +97,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
     }, []);
 
+    const login = useCallback(
+        async (email: string, password: string) => {
+            localStorage.setItem("cinemaEmailHint", email);
+            const tokens = await loginRequest(email, password);
+            setSession(tokens.accessToken, tokens.refreshToken);
+        },
+        [setSession]
+    );
+
+    const signup = useCallback(
+        async (email: string, password: string) => {
+            localStorage.setItem("cinemaEmailHint", email);
+            const tokens = await signupRequest(email, password);
+            setSession(tokens.accessToken, tokens.refreshToken);
+        },
+        [setSession]
+    );
+
     const value = useMemo<AuthContextValue>(
         () => ({
             ...state,
             isAuthenticated: Boolean(state.accessToken && state.refreshToken),
             isAdmin: isAdminRole(state.role),
             setSession,
+            login,
+            signup,
             logout,
             refreshTokensFromStorage
         }),
-        [state, setSession, logout, refreshTokensFromStorage]
+        [state, setSession, login, signup, logout, refreshTokensFromStorage]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -126,7 +148,10 @@ export async function loginRequest(email: string, password: string): Promise<{ a
     return res.json() as Promise<{ accessToken: string; refreshToken: string }>;
 }
 
-export async function signupRequest(email: string, password: string): Promise<void> {
+export async function signupRequest(
+    email: string,
+    password: string
+): Promise<{ accessToken: string; refreshToken: string }> {
     const res = await fetch(`${(import.meta.env.VITE_API_URL ?? "http://localhost:3000").replace(/\/$/, "")}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -136,4 +161,9 @@ export async function signupRequest(email: string, password: string): Promise<vo
         const err = await readError(res);
         throw new Error(err);
     }
+    const body = (await res.json()) as { accessToken?: string; refreshToken?: string };
+    if (!body.accessToken || !body.refreshToken) {
+        throw new Error("Réponse inscription invalide");
+    }
+    return { accessToken: body.accessToken, refreshToken: body.refreshToken };
 }

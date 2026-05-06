@@ -1,6 +1,5 @@
 import { Repository } from "typeorm";
 import { Room } from "../database/entities/room.js";
-import { ListRoomRequest } from "../handlers/requests/room-request.js";
 import { ResourceConflictError } from "./error.js";
 
 export interface ListResponse<T> {
@@ -93,10 +92,11 @@ export class RoomUsecase {
     }
 }
 
-    async deleteRoom(id: number): Promise<void> {
+    async deleteRoom(id: number): Promise<Room | null> {
         const room = await this.getRoom(id);
-        if (!room) return;
-        
+        if (!room) return null;
+
         await this.roomRepository.delete(id);
+        return room;
     }
 }

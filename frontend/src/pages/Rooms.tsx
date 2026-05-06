@@ -138,7 +138,7 @@ export const Rooms: React.FC = () => {
         columns={columns}
         dataSource={data || []}
         loading={loading}
-        rowKey={(record) => record.id}
+        rowKey={(record: Room) => record.id}
         pagination={{ pageSize: 10 }}
       />
 

@@ -1,15 +1,13 @@
 services:
   mysql-db:
-    image: mysql:8.0 
+    image: mysql:8.0
     container_name: cinema-db
-    restart: always
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - "3306:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
@@ -18,33 +16,34 @@ services:
       timeout: 5s
       retries: 5
 
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: cinema-pma
-    ports:
-      - "8080:80"
-    depends_on:
-      - mysql-db
-    environment:
-      - PMA_HOST=mysql-db
-      - PMA_PORT=3306
-
-  myapp:
+  api:
     build: .
-    container_name: cinema-app
+    container_name: cinema-api
     ports:
       - "3000:3000"
-    volumes:
-      - ./src:/app/src
     depends_on:
-      mysql-db: 
+      mysql-db:
         condition: service_healthy
     environment:
-      - DB_HOST=mysql-db
-      - DB_PORT=3306
-      - DB_USERNAME=${DB_USERNAME}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_DATABASE=${DB_DATABASE}
+      APP_PORT: "3000"
+      DB_HOST: mysql-db
+      DB_PORT: "3306"
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_DATABASE: ${DB_DATABASE}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    container_name: cinema-web
+    ports:
+      - "9080:80"
+    depends_on:
+      - api
 
 volumes:
   mysql-data:

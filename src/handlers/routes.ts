@@ -34,9 +34,52 @@ export const initHandlers = (app: Application) => {
 
     app.post("/movies", AuthMiddleware, RoleMiddleware(["ADMIN"]), CreateMovie);
 
-    app.get("/movies", AuthMiddleware, ListMovies);
+    /**
+     * @openapi
+     * /movies:
+     *   get:
+     *     tags: [Films]
+     *     summary: Lister les films (public)
+     *     security: []
+     *     parameters:
+     *       - in: query
+     *         name: page
+     *         schema:
+     *           type: integer
+     *       - in: query
+     *         name: size
+     *         schema:
+     *           type: integer
+     *       - in: query
+     *         name: title
+     *         schema:
+     *           type: string
+     *     responses:
+     *       200:
+     *         description: Liste des films
+     */
+    app.get("/movies", ListMovies);
 
-    app.get("/movies/:id", AuthMiddleware, GetMovie);
+    /**
+     * @openapi
+     * /movies/{id}:
+     *   get:
+     *     tags: [Films]
+     *     summary: Detail d'un film (public)
+     *     security: []
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: integer
+     *     responses:
+     *       200:
+     *         description: Film trouve
+     *       404:
+     *         description: Film introuvable
+     */
+    app.get("/movies/:id", GetMovie);
 
     app.patch("/movies/:id", AuthMiddleware, RoleMiddleware(["ADMIN"]), UpdateMovie);
 
@@ -71,9 +114,8 @@ export const initHandlers = (app: Application) => {
      * /screenings:
      *   get:
      *     tags: [Seances]
-     *     summary: Lister les seances
-     *     security:
-     *       - bearerAuth: []
+     *     summary: Lister les seances (public)
+     *     security: []
      *     parameters:
      *       - in: query
      *         name: page
@@ -95,16 +137,15 @@ export const initHandlers = (app: Application) => {
      *       200:
      *         description: Liste des seances
      */
-    app.get("/screenings", AuthMiddleware, ListScreenings);
+    app.get("/screenings", ListScreenings);
 
     /**
      * @openapi
      * /screenings/{id}:
      *   get:
      *     tags: [Seances]
-     *     summary: Recuperer une seance par ID
-     *     security:
-     *       - bearerAuth: []
+     *     summary: Recuperer une seance par ID (public)
+     *     security: []
      *     parameters:
      *       - in: path
      *         name: id
@@ -117,7 +158,7 @@ export const initHandlers = (app: Application) => {
      *       404:
      *         description: Seance introuvable
      */
-    app.get("/screenings/:id", AuthMiddleware, GetScreening);
+    app.get("/screenings/:id", GetScreening);
 
     /**
      * @openapi
