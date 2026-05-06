@@ -89,11 +89,6 @@ export function LoginPage() {
                         </Button>
                     </form>
                 </Card>
-
-                <p className="text-center text-xs text-stone-600">
-                    Variable <code className="text-amber-700/90">VITE_API_URL</code> dans{" "}
-                    <code className="text-amber-700/90">frontend/.env</code> (ex. http://localhost:3000)
-                </p>
             </div>
         </div>
     );

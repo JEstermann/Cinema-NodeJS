@@ -6,6 +6,9 @@
 
 **Pas fait / partiel :** planning par dates, maintenance→séances, même film multi‑salles, horaires 9h–20h, capacité séance & races, stats/admin users/transactions globales, bonus employés & CI/tests/obs.
 
-**Run :** `.env` → `docker compose up --build` → API `:3000`, doc `/docs`.
+## Ports (hôte → conteneur)
 
-**Démo :** login → Bearer → CRUD admin → deposit → ticket → `/docs`.
+**api** | 3000 | 3000 | `http://localhost:3000` — Swagger `/docs` |
+**web** | 9080 | 80 (nginx) | `http://localhost:9080` |
+**phpmyadmin** | 8081 | 80 | `http://localhost:8081` 
+**mysql-db** | *(non publié)* | 3306 | Accès interne Docker 

@@ -16,6 +16,19 @@ services:
       timeout: 5s
       retries: 5
 
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: cinema-pma
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mysql-db
+      PMA_PORT: "3306"
+
   api:
     build: .
     container_name: cinema-api
