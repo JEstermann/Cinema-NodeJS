@@ -1,5 +1,5 @@
 /** API prod (HTTPS) si aucune variable au build ; surcharge avec `VITE_API_URL`. */
-const DEFAULT_PROD_API_BASE = "https://api.massi.dev";
+const DEFAULT_PROD_API_BASE = "https://api.aimassi.dev";
 
 export function getApiBase(): string {
     const raw = import.meta.env.VITE_API_URL;
