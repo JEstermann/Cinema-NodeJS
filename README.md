@@ -13,4 +13,16 @@
 **phpmyadmin** | 8081 | 80 | `http://localhost:8081` 
 **mysql-db** | *(non publié)* | 3306 | Accès interne Docker 
 
+## Déploiement (aimassi.dev)
+
+| Domaine | Usage |
+|--------|--------|
+| **docs.aimassi.dev** | Documentation Swagger — nginx redirige automatiquement vers `/docs`. |
+| **db.aimassi.dev** | MySQL (accès selon ta conf réseau / pare-feu). |
+| **zenith.aimassi.dev** | Front Cinéma Zenith (appli web). |
+
+**Base MySQL (prod)** : utilisateur `cinema`, mot de passe `cinema123`.
+
+---
+
 docker compose up -d --build
