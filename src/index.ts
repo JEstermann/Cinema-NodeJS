@@ -6,6 +6,7 @@ import { swaggerDocs } from "./handlers/swagger/swagger.js";
 import { getPublicApiBaseUrl } from "./config/public-api.js";
 
 const app = express();
+app.set("trust proxy", 1);
 const PORT = process.env.APP_PORT || 3000;
 
 app.use((req, res, next) => {
